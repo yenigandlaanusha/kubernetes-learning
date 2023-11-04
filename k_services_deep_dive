@@ -1,0 +1,39 @@
+There are 3 diferent types of services:
+1.Cluster IP
+2.Nodeport 
+3.LoadBalancer
+
+ClusterIP: Exposes a service which is only accessible from within the cluster.
+NodePort: Exposes a service via a static port on each node’s IP.
+LoadBalancer: Exposes the service via the cloud provider’s load balancer.
+
+Kubernetes Services Demo:
+
+Take any web application, here i'm using a python django application
+using this docker image **anushayenigandla/python-django-app:latest**
+create a deployment.yaml file
+
+```apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-django-app #name of the application
+  labels:
+    app: python-django-app  #label name
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: python-django-app  # using this label the replica set is creating anew pod if any pod is killed
+  template:
+    metadata:
+      labels:
+        app: python-django-app  #pod label name.make sure this label and seletor label is same
+    spec:
+      containers:
+      - name: python-django-app
+        image: anushayenigandla/python-django-app:latest  #pass the image name here
+        ports:
+        - containerPort: 8000```  #check this in docker file in CMD
+
+create a deployment 
+**kubectl apply -f deployment.yaml**
