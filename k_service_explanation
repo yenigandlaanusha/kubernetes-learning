@@ -1,0 +1,18 @@
+**Service Discovery**
+Change the selector name in service.yaml file, will the service discovery able to detect the pods . it shouldn't detect the pods becoz the label in deployment and service.yaml file is different
+and try to apply the service and access the service either browser or curl, we will see that the application is not acceptable.
+so by just chnaging the labels and selectors we understood that service is not discoverable.
+
+**Load Balancing**
+Why do we need load balancing?
+If we have only one replica and we have 100 request, it will be difficult for one replica to serve all the requests.so on depending upon the load of your application , we can create multiple replicas
+but by default the deployments or the pods donot have load balancing.If we create a service we get a load balancing
+
+Get the pods
+
+**
+kubectl get pods
+NAME                                 READY   STATUS    RESTARTS   AGE
+python-django-app-76974d567d-bd5rb   1/1     Running   0          110m
+python-django-app-76974d567d-l46wp   1/1     Running   0          107m
+**
