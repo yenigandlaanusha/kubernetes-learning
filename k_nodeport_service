@@ -1,0 +1,68 @@
+For people who are in organisation need to access the application without kubernetes cluster IPaddress
+
+create a service.yaml file
+**
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-django-app-service #any name for the service
+spec:
+  type: NodePort
+  selector:
+    app: python-django-app  #service will be directly looking into the pod selector
+  ports:
+    - port: 80
+      targetPort: 8000 #port on which the application is running
+      nodePort: 30007
+**
+
+Apply the service
+**
+kubectl apply -f "C:\Users\Naresh\Docker-Zero-to-Hero\examples\python-web-app/service.yaml"
+service/python-django-app-service created
+**
+
+To get thje details of the service
+**
+kubectl get svc
+NAME                        TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+kubernetes                  ClusterIP   10.96.0.1      <none>        443/TCP        37h
+python-django-app-service   NodePort    10.96.158.45   <none>        80:30007/TCP   2m15s
+**
+
+To get more details about service
+**
+kubectl get svc -v=7
+I1104 09:55:27.418184    3028 loader.go:395] Config loaded from file:  C:\Users\Naresh\.kube\config
+I1104 09:55:27.421640    3028 cert_rotation.go:137] Starting client certificate rotation controller
+I1104 09:55:27.430683    3028 round_trippers.go:463] GET https://192.168.59.100:8443/api/v1/namespaces/default/services?limit=500
+I1104 09:55:27.430683    3028 round_trippers.go:469] Request Headers:
+I1104 09:55:27.431192    3028 round_trippers.go:473]     Accept: application/json;as=Table;v=v1;g=meta.k8s.io,application/json;as=Table;v=v1beta1;g=meta.k8s.io,application/json
+I1104 09:55:27.431192    3028 round_trippers.go:473]     User-Agent: kubectl/v1.28.3 (windows/amd64) kubernetes/a8a1abc
+I1104 09:55:27.448041    3028 round_trippers.go:574] Response Status: 200 OK in 16 milliseconds
+NAME                        TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+kubernetes                  ClusterIP   10.96.0.1      <none>        443/TCP        37h
+python-django-app-service   NodePort    10.96.158.45   <none>        80:30007/TCP   3m4s
+**
+
+If we create a service winth nodeport , it will create a port mapping
+we can use this cluster ipnaddress and login to application
+***minikube ssh
+curl -L http://10.96.158.45:80***
+we can access the application inside the kubernetes cluster
+
+But by creating a service using nodeport , it will create a port mapping .port mapping is ntg but what kubernetes service has done for us is it says that if you dont want to access the application using cluster ip address .you can use the
+node ip address and i have mapped the port that is port 80 with 30007 port that we have provided in the service.yaml file. so now i can simply get minikube ip address
+
+**
+minikube ip # to get ip address of minikube
+192.168.59.100
+***
+
+**curl -L http://192.168.59.100:30007/demo**
+
+Now we are able to access the application with the node ip address.now we no need to login to the kubernetes cluster and we can also acess this using browser.
+**http://192.168.59.100:30007/demo/** .we can see the application
+
+
+
