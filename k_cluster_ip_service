@@ -104,4 +104,12 @@ we can see the html of the page
 If you try to access the url outside, we will not see any traffic beoc the pod is only be able to access inside the cluster 
 **curl -L http://10.244.0.25:8000/demo
 output: empty**
+There is no traffic
 This is called Cluster IP Service
+
+we are able to access application and able to get the response only inside the kubernetes cluster  this is becoz a pod be default will have only 
+the cluster network attached to it so If it ia cluster network we need to access it using the  cluster itself.we need to login to the cluster and access it
+but this is not expected.what if the people who dont have access to the kubernetes cluster.and what if external customer what to access the application.
+We have 2 problem to solve:
+1.people inside org
+2.expose the application to world
