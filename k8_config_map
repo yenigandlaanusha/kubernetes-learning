@@ -1,0 +1,144 @@
+ConfigMap:
+Storing the info that can be used by application later point of time.It is used to store data .This data can be used later point of time either by pod or container.
+
+Disadvantages:
+There is no encryption.Whenever we crate a resource in kubernetes what happens is it will get stored in etcd.usually in etcd the info is stored as objects.Any hacker can retreive the info and compromise the pods
+
+There are 2 ways we can do it either by env or volume mount
+
+Created a configfile as test-cm.yml
+**
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-demo-pod
+data:
+  db-port: "3306"
+**
+kubectl apply -f test-cm.yaml
+
+use the env variables from config file add the details in deployment yml file as env
+**
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-django-app
+  labels:
+    app: python-django-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: python-django-app
+  template:
+    metadata:
+      labels:
+        app: python-django-app
+    spec:
+      containers:
+      - name: python-django-app
+        image: anushayenigandla/python-django-app:latest
+        env:
+        - name: DB-PORT
+          valueFrom:
+            configMapKeyRef:
+              name: configmap-demo-pod
+              key: db-port
+    
+        ports:
+        - containerPort: 8000
+
+**
+To check whether the port is there or not we can use this command
+**
+kubectl exec -it <podname> --/bin/bash
+env | grep DB
+**
+prints **DB-PORT:3306**
+
+Once config map is created , we cannot change  it.only we need to reapply the deployment.re applying or running the deployment is not acceptable in production becoz we can loose the traffic.
+Instead of using env, we have another option of volume mounts.
+
+Change deployment file from env variables to mount volumes
+
+**
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-django-app
+  labels:
+    app: python-django-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: python-django-app
+  template:
+    metadata:
+      labels:
+        app: python-django-app
+    spec:
+      containers:
+      - name: python-django-app
+        image: anushayenigandla/python-django-app:latest
+        volumeMounts:
+        - name: db-connection
+          mountPath: /opt
+        ports:
+        - containerPort: 8000
+      volumes: #storage,read data from config file
+      - name: db-connection
+        configMap:
+          name: configmap-demo-pod
+**
+
+**
+Now again if we check whether the port is there or not we can use this command
+**
+kubectl exec -it <podname> --/bin/bash
+env | grep DB
+**
+it prints ntg
+
+we have mounted the volume ,lets check whether it is mounted or not
+**
+ls /opt
+db-port
+cat /opt/db-port
+3306
+**
+
+Now lets change the port to another and check what is happening.go to config.yaml and change the port
+
+**
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-demo-pod
+data:
+  db-port: "3308"
+**
+kubectl apply -f test-cm.yaml
+configmap/configmap-demo-pod configured
+
+kubectl get pods
+NAME                                 READY   STATUS    RESTARTS   AGE
+nginx-deployment-cbdccf466-7gpbg     1/1     Running   0          16m
+python-django-app-79f95fb7c8-5xrtm   1/1     Running   0          10m
+python-django-app-79f95fb7c8-85zsq   1/1     Running   0          10m
+
+Without getting restart it will automatically update the db port
+
+kubectl exec -it python-django-app-79f95fb7c8-5xrtm -- /bin/bash
+root@python-django-app-79f95fb7c8-5xrtm:/app# ls /opt/
+db-port
+root@python-django-app-79f95fb7c8-5xrtm:/app# cat /opt/db-port
+3308
+
+
+
+
+
+
+
+
